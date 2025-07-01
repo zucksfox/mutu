@@ -107,6 +107,27 @@ button:disabled {
   box-shadow: 0 1px 4px 0 #e0e7ff;
   font-size: 1.08em;
   color: #334155;
+  max-height: 320px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #6366f1 #e0e7ff;
+}
+.result::-webkit-scrollbar {
+  width: 5px;
+}
+.result::-webkit-scrollbar-thumb {
+  background: linear-gradient(120deg, #38bdf8 0%, #6366f1 100%);
+  border-radius: 8px;
+  box-shadow: 0 1px 4px #6366f122;
+  min-height: 24px;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.result::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(120deg, #6366f1 0%, #7c3aed 100%);
+  box-shadow: 0 2px 8px #6366f144;
+}
+.result::-webkit-scrollbar-track {
+  background: transparent;
 }
 .kategori {
   font-size: 1.22em;
@@ -153,6 +174,25 @@ li {
 .penilaian-box button:last-child {
   margin-bottom: 0;
 }
+.penilaian-box textarea {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  border-radius: 8px;
+  border: 1.5px solid #b6b6b6;
+  padding: 10px;
+  font-size: 1.05em;
+  background: #f8fafc;
+  resize: vertical;
+  transition: border 0.2s, box-shadow 0.2s;
+  margin-bottom: 8px;
+}
+.penilaian-box textarea:focus {
+  border: 1.5px solid #6366f1;
+  box-shadow: 0 2px 8px #c7d2fe;
+  outline: none;
+}
 @media (max-width: 700px) {
   .container {
     max-width: 98vw;
@@ -187,10 +227,16 @@ li {
     margin-top: 10px;
   }
   .result {
+    max-height: 220px;
     padding-left: 4vw;
     padding-right: 4vw;
     font-size: 0.98em;
     border-radius: 8px;
+  }
+  .penilaian-box textarea {
+    font-size: 1em;
+    padding: 8px;
+    border-radius: 7px;
   }
 }
 @media (max-width: 420px) {
@@ -211,6 +257,11 @@ li {
   button {
     font-size: 0.98em;
     padding: 10px 0;
+    border-radius: 6px;
+  }
+  .penilaian-box textarea {
+    font-size: 0.98em;
+    padding: 7px;
     border-radius: 6px;
   }
 }
@@ -335,4 +386,34 @@ li {
   color: #22c55e;
   font-weight: 700;
   font-style: normal;
+}
+.input-nama-aplikasi {
+  font-size: 1.1em;
+  padding: 10px;
+  width: 100%;
+  border-radius: 8px;
+  border: 1.5px solid #b6b6b6;
+  margin-bottom: 12px;
+  background: #f8fafc;
+  box-sizing: border-box;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+.input-nama-aplikasi:focus {
+  border: 1.5px solid #6366f1;
+  box-shadow: 0 2px 8px #c7d2fe;
+  outline: none;
+}
+@media (max-width: 700px) {
+  .input-nama-aplikasi {
+    font-size: 1em;
+    padding: 8px;
+    border-radius: 7px;
+  }
+}
+@media (max-width: 420px) {
+  .input-nama-aplikasi {
+    font-size: 0.98em;
+    padding: 7px;
+    border-radius: 6px;
+  }
 } 

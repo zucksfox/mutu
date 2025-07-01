@@ -107,7 +107,7 @@ function renderInputNamaAplikasi() {
       <div style="font-size:1.08em;color:#2563eb;font-weight:600;">Masukkan Nama Aplikasi yang Akan Dinilai:</div>
     </div>
     <div class="penilaian-box">
-      <input id="namaAplikasiInput" type="text" placeholder="Contoh: MyApp" style="font-size:1.1em;padding:10px;width:100%;border-radius:8px;border:1.5px solid #b6b6b6;margin-bottom:12px;" />
+      <input id="namaAplikasiInput" type="text" class="input-nama-aplikasi" placeholder="Contoh: MyIstri" />
       <div id="error" class="error"></div>
       <button id="mulaiBtn">Mulai Penilaian</button>
     </div>
@@ -240,13 +240,35 @@ function renderResult() {
   if (totalSkor >= 4.0) kategori = "BAIK ✅";
   else if (totalSkor >= 3.0) kategori = "CUKUP ⚠️";
   else kategori = "BURUK ❌";
-  resultHTML += `<div class="kategori">🧠 Kategori: ${kategori}</div></div>`;
+  resultHTML += `<div class="kategori">🧠 Kategori: ${kategori}</div>`;
+  resultHTML += `<div style='text-align:center;margin-top:18px;'><button id="ulangBtn" style="background:linear-gradient(90deg,#22c55e,#38bdf8);color:#fff;font-weight:600;padding:12px 24px;border:none;border-radius:8px;box-shadow:0 2px 8px #38bdf822;cursor:pointer;font-size:1em;">Ingin nilai aplikasi lain?</button></div>`;
+  resultHTML += `</div>`;
   app.innerHTML = resultHTML;
+  // Simpan hasil terakhir ke localStorage
+  localStorage.setItem('hasil_terakhir_iso25010', JSON.stringify({ jawaban, namaAplikasi }));
   clearProgress();
+  document.getElementById('ulangBtn').onclick = () => {
+    localStorage.removeItem('hasil_terakhir_iso25010');
+    jawaban = [];
+    currentIndex = 0;
+    currentSub = 0;
+    namaAplikasi = '';
+    renderInputNamaAplikasi();
+  };
 }
 
-// Start the app
+// Saat load, jika ada hasil terakhir, tampilkan hasil
 (function init() {
+  const hasilTerakhir = localStorage.getItem('hasil_terakhir_iso25010');
+  if (hasilTerakhir) {
+    const parsed = JSON.parse(hasilTerakhir);
+    if (parsed && Array.isArray(parsed.jawaban) && typeof parsed.namaAplikasi === 'string') {
+      jawaban = parsed.jawaban;
+      namaAplikasi = parsed.namaAplikasi;
+      renderResult();
+      return;
+    }
+  }
   if (loadProgress()) {
     if (window.confirm('Lanjutkan penilaian yang belum selesai?')) {
       if (!namaAplikasi) {
