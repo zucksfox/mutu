@@ -168,7 +168,7 @@ function renderResult() {
 // Start the app
 (function init() {
   if (loadProgress()) {
-    if (window.confirm('Lanjutkan penilaian yang belum selesai?')) {
+    if (window.confirm('Lanjutkan penilaian yang belum selesai!')) {
       renderQuestion();
       return;
     } else {
