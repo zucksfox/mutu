@@ -304,8 +304,12 @@ li {
   width: auto;
   opacity: 0.96;
   filter: drop-shadow(0 2px 6px #6366f133);
-  pointer-events: none;
+  pointer-events: auto;
   margin-bottom: -6px;
+  transition: filter 0.25s cubic-bezier(.4,2,.6,1);
+}
+.bottom-img:hover, .bottom-img:active {
+  filter: drop-shadow(0 8px 32px #6366f199) drop-shadow(0 2px 6px #6366f133);
 }
 @media (max-width: 700px) {
   .bottom-img-area {
@@ -313,7 +317,7 @@ li {
     padding-left: 8px;
   }
   .bottom-img {
-    height: 64px;
+    height: 120px;
     margin-bottom: -4px;
   }
 }
@@ -323,7 +327,7 @@ li {
     padding-left: 4px;
   }
   .bottom-img {
-    height: 36px;
+    height: 90px;
     margin-bottom: -2px;
   }
 }
