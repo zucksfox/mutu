@@ -221,7 +221,7 @@ function renderResult() {
   let totalSkor = 0;
   let resultHTML = `<div class="result">
     <div style="font-size:1.13em;font-weight:600;color:#2563eb;margin-bottom:8px;">Hasil Evaluasi: <span style="color:#2d3a4a">${namaAplikasi}</span></div>
-    <b>📊 Rekapitulasi Penilaian:</b><br><ul>`;
+    <b>📊 Rekap Penilaian:</b><br><ul>`;
   karakteristik.forEach(kar => {
     const subJawaban = jawaban.filter(j => j.karakteristik === kar.nama);
     const subSkor = subJawaban.map(j => j.skor);
@@ -241,9 +241,9 @@ function renderResult() {
   else if (totalSkor >= 3.0) kategori = "CUKUP ⚠️";
   else kategori = "BURUK ❌";
   resultHTML += `<div class="kategori">🧠 Kategori: ${kategori}</div>`;
-  resultHTML += `<div style='text-align:center;margin-top:18px;'><button id="ulangBtn" style="background:linear-gradient(90deg,#22c55e,#38bdf8);color:#fff;font-weight:600;padding:12px 24px;border:none;border-radius:8px;box-shadow:0 2px 8px #38bdf822;cursor:pointer;font-size:1em;">Ingin nilai aplikasi lain?</button></div>`;
   resultHTML += `</div>`;
-  app.innerHTML = resultHTML;
+  // Render result box and button separately
+  app.innerHTML = resultHTML + `\n<div style='text-align:center;margin-top:18px;'><button id="ulangBtn" style="background:linear-gradient(90deg,#22c55e,#38bdf8);color:#fff;font-weight:600;padding:12px 24px;border:none;border-radius:8px;box-shadow:0 2px 8px #38bdf822;cursor:pointer;font-size:1em;">Ingin nilai aplikasi lain?</button></div>`;
   // Simpan hasil terakhir ke localStorage
   localStorage.setItem('hasil_terakhir_iso25010', JSON.stringify({ jawaban, namaAplikasi }));
   clearProgress();
