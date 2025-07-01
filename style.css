@@ -156,23 +156,24 @@ li {
 @media (max-width: 700px) {
   .container {
     max-width: 98vw;
-    padding: 24px 5vw 20px 5vw;
+    padding: 15px 4vw 15px 4vw;
     border-radius: 12px;
   }
-  h1 {
-    font-size: 1.15em;
-    margin-bottom: 22px;
+  h1, h2 {
+    font-size: 1.08em;
+    margin-bottom: 18px;
   }
   .question-box, .penilaian-box {
-    padding: 14px 6vw 12px 6vw;
+    padding-left: 4vw;
+    padding-right: 4vw;
     font-size: 0.98em;
     border-radius: 8px;
   }
   .question-box {
-    margin-bottom: 12px;
+    margin-bottom: 5px;
   }
   .penilaian-box {
-    margin-bottom: 6px;
+    margin-bottom: 2px;
   }
   select, input[type=number] {
     font-size: 1em;
@@ -183,27 +184,29 @@ li {
     font-size: 1em;
     padding: 12px 0;
     border-radius: 8px;
-    margin-top: 12px;
+    margin-top: 10px;
   }
   .result {
-    padding: 18px 6vw 12px 6vw;
+    padding-left: 4vw;
+    padding-right: 4vw;
     font-size: 0.98em;
     border-radius: 8px;
   }
 }
 @media (max-width: 420px) {
   .container {
-    padding: 10px 3vw 10px 3vw;
+    padding: 8px 2vw 8px 2vw;
     border-radius: 7px;
   }
-  h1 {
-    font-size: 0.98em;
-    margin-bottom: 14px;
+  h1, h2 {
+    font-size: 0.95em;
+    margin-bottom: 10px;
   }
   .question-box, .penilaian-box, .result {
     font-size: 0.92em;
     border-radius: 6px;
-    padding: 8px 2vw 8px 2vw;
+    padding-left: 2vw;
+    padding-right: 2vw;
   }
   button {
     font-size: 0.98em;
