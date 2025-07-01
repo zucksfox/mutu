@@ -133,15 +133,15 @@ li {
   border-radius: 10px;
   box-shadow: 0 1px 4px 0 #e0e7ff;
   padding: 18px 16px 14px 16px;
-  margin-bottom: 18px;
+  margin-bottom: 6px;
   font-size: 1.08em;
 }
 .penilaian-box {
   background: #fff;
   border-radius: 10px;
   box-shadow: 0 1.5px 6px 0 #e0e7ff;
-  padding: 18px 16px 16px 16px;
-  margin-bottom: 8px;
+  padding: 14px 14px 12px 14px;
+  margin-bottom: 2px;
   font-size: 1.05em;
   display: flex;
   flex-direction: column;
@@ -291,33 +291,36 @@ li {
   align-items: flex-end;
   position: fixed;
   left: 0;
-  bottom: 24px;
+  bottom: 0;
   z-index: 9;
   pointer-events: none;
   padding-left: 18px;
 }
 .bottom-img {
-  height: 150px;
+  height: 120px;
   width: auto;
-  opacity: 0.92;
-  filter: drop-shadow(0 2px 15px #6366f144);
+  opacity: 0.96;
+  filter: drop-shadow(0 2px 6px #6366f133);
   pointer-events: none;
+  margin-bottom: -6px;
 }
 @media (max-width: 700px) {
   .bottom-img-area {
-    bottom: 18px;
+    bottom: 0;
     padding-left: 8px;
   }
   .bottom-img {
-    height: 80px;
+    height: 64px;
+    margin-bottom: -4px;
   }
 }
 @media (max-width: 420px) {
   .bottom-img-area {
-    bottom: 8px;
+    bottom: 0;
     padding-left: 4px;
   }
   .bottom-img {
-    height: 48px;
+    height: 36px;
+    margin-bottom: -2px;
   }
 } 
