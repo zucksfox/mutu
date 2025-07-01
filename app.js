@@ -53,18 +53,25 @@ const karakteristik = [
     sub: [
       { nama: "Adaptability", pertanyaan: "Seberapa mudah aplikasi dijalankan di lingkungan/platform berbeda?" },
       { nama: "Installability", pertanyaan: "Seberapa mudah aplikasi diinstal pada perangkat baru?" },
-      { nama: "Replaceability", pertanyaan: "Seberapa mudah aplikasi digantikan dengan aplikasi lain?" }
+      { nama: "Replaceability", pertanyaan: "Seberapa mudah aplikasi digantikan dengan apk lain?" }
     ]
   }
 ];
 
+let jawaban = [];
+let currentIndex = 0;
+let currentSub = 0;
+let namaAplikasi = '';
+
+const app = document.getElementById('app');
 const STORAGE_KEY = 'penilaian_iso25010';
 
 function saveProgress() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify({
     jawaban,
     currentIndex,
-    currentSub
+    currentSub,
+    namaAplikasi
   }));
 }
 
@@ -76,11 +83,13 @@ function loadProgress() {
     if (
       Array.isArray(parsed.jawaban) &&
       typeof parsed.currentIndex === 'number' &&
-      typeof parsed.currentSub === 'number'
+      typeof parsed.currentSub === 'number' &&
+      typeof parsed.namaAplikasi === 'string'
     ) {
       jawaban = parsed.jawaban;
       currentIndex = parsed.currentIndex;
       currentSub = parsed.currentSub;
+      namaAplikasi = parsed.namaAplikasi;
       return true;
     }
   } catch (e) {}
@@ -91,18 +100,38 @@ function clearProgress() {
   localStorage.removeItem(STORAGE_KEY);
 }
 
-let jawaban = [];
-let currentIndex = 0;
-let currentSub = 0;
-
-const app = document.getElementById('app');
-
-function renderQuestion() {
-  const kar = karakteristik[currentIndex];
-  const sub = kar.sub[currentSub];
+function renderInputNamaAplikasi() {
   app.innerHTML = `
     <div class="question-box">
-      <div style="font-size:1.05em;color:#2563eb;font-weight:600;">${sub.pertanyaan}</div>
+      <div style="font-size:1.08em;color:#2563eb;font-weight:600;">Masukkan Nama Aplikasi yang Akan Dinilai:</div>
+    </div>
+    <div class="penilaian-box">
+      <input id="namaAplikasiInput" type="text" placeholder="Contoh: MyApp" style="font-size:1.1em;padding:10px;width:100%;border-radius:8px;border:1.5px solid #b6b6b6;margin-bottom:12px;" />
+      <div id="error" class="error"></div>
+      <button id="mulaiBtn">Mulai Penilaian</button>
+    </div>
+  `;
+  document.getElementById('mulaiBtn').onclick = () => {
+    const input = document.getElementById('namaAplikasiInput').value.trim();
+    const errorDiv = document.getElementById('error');
+    if (input.length < 2) {
+      errorDiv.textContent = 'Nama aplikasi harus diisi minimal 2 karakter.';
+      return;
+    }
+    namaAplikasi = input;
+    renderQuestion();
+  };
+}
+
+function renderQuestion(withSlide) {
+  const kar = karakteristik[currentIndex];
+  const sub = kar.sub[currentSub];
+  let pertanyaan = sub.pertanyaan;
+  // Tambahkan nama aplikasi setelah setiap kata 'aplikasi' jika belum ada nama aplikasi setelahnya
+  pertanyaan = pertanyaan.replace(/aplikasi(?!\s*([A-Za-z0-9_\-\(\[]*${namaAplikasi}[A-Za-z0-9_\-\)\]]*))/gi, match => `${match} <span class='nama-aplikasi-green'>${namaAplikasi}</span>`);
+  const html = `
+    <div class="question-box">
+      <div style="font-size:1.05em;color:#2563eb;font-weight:600;">${pertanyaan}</div>
     </div>
     <div class="penilaian-box">
       <label>Nilai untuk <b>${kar.nama}</b> &gt; <b>${sub.nama}</b> (1-5):</label><br>
@@ -118,6 +147,15 @@ function renderQuestion() {
       <button id="nextBtn">Berikutnya</button>
     </div>
   `;
+  if (withSlide) {
+    const appDiv = document.getElementById('app');
+    appDiv.classList.remove('slide-in-right');
+    appDiv.classList.add('slide-in-right');
+    setTimeout(() => {
+      appDiv.classList.remove('slide-in-right');
+    }, 400);
+  }
+  app.innerHTML = html;
   document.getElementById('nextBtn').onclick = nextHandler;
 }
 
@@ -135,7 +173,16 @@ function nextHandler() {
     }
     if (currentIndex < karakteristik.length) {
       saveProgress();
-      renderQuestion();
+      // SLIDE OUT, THEN RENDER NEXT WITH SLIDE IN
+      const appDiv = document.getElementById('app');
+      appDiv.classList.add('slide-out-left');
+      appDiv.addEventListener('transitionend', function handler(e) {
+        if (e.propertyName === 'transform') {
+          appDiv.removeEventListener('transitionend', handler);
+          appDiv.classList.remove('slide-out-left');
+          renderQuestion(true);
+        }
+      });
     } else {
       renderResult();
     }
@@ -146,7 +193,9 @@ function nextHandler() {
 
 function renderResult() {
   let totalSkor = 0;
-  let resultHTML = '<div class="result"><b>📊 Hasil Evaluasi:</b><br><ul>';
+  let resultHTML = `<div class="result">
+    <div style="font-size:1.13em;font-weight:600;color:#2563eb;margin-bottom:8px;">Hasil Evaluasi: <span style="color:#2d3a4a">${namaAplikasi}</span></div>
+    <b>📊 Rekapitulasi Penilaian:</b><br><br><ul>`;
   karakteristik.forEach(kar => {
     const subSkor = jawaban.filter(j => j.karakteristik === kar.nama).map(j => j.skor);
     const rata = subSkor.reduce((a, b) => a + b, 0) / subSkor.length;
@@ -157,9 +206,9 @@ function renderResult() {
   resultHTML += '</ul>';
   resultHTML += `<br><b>🧮 Skor Akhir:</b> ${totalSkor.toFixed(2)} dari 5.00<br>`;
   let kategori = "";
-  if (totalSkor >= 4.0) kategori = "BAIK ✅";
-  else if (totalSkor >= 3.0) kategori = "CUKUP ⚠️";
-  else kategori = "BURUK ❌";
+  if (totalSkor >= 4.0) kategori = "APLIKASI SANGAT BAIK ✅";
+  else if (totalSkor >= 3.0) kategori = "APLIKASI CUKUP BAIK ⚠️";
+  else kategori = "APLIKASI BURUK ❌";
   resultHTML += `<div class="kategori">🧠 Kategori: ${kategori}</div></div>`;
   app.innerHTML = resultHTML;
   clearProgress();
@@ -168,8 +217,12 @@ function renderResult() {
 // Start the app
 (function init() {
   if (loadProgress()) {
-    if (window.confirm('Lanjutkan penilaian yang belum selesai!')) {
-      renderQuestion();
+    if (window.confirm('Lanjutkan penilaian yang belum selesai?')) {
+      if (!namaAplikasi) {
+        renderInputNamaAplikasi();
+      } else {
+        renderQuestion();
+      }
       return;
     } else {
       clearProgress();
@@ -178,5 +231,6 @@ function renderResult() {
   jawaban = [];
   currentIndex = 0;
   currentSub = 0;
-  renderQuestion();
+  namaAplikasi = '';
+  renderInputNamaAplikasi();
 })(); 
