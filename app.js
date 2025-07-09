@@ -134,14 +134,14 @@ function renderQuestion(withSlide) {
       <div style="font-size:1.05em;color:#2563eb;font-weight:600;">${pertanyaan}</div>
     </div>
     <div class="penilaian-box">
-      <label>Nilai untuk <b>${kar.nama}</b> &gt; <b>${sub.nama}</b> (1-5):</label><br>
+      <label>Nilai untuk <b>${kar.nama}</b> &gt; <b>${sub.nama}</b>:</label><br>
       <select id="skor">
         <option value="">Pilih nilai</option>
-        <option value="1">1</option>
-        <option value="2">2</option>
-        <option value="3">3</option>
-        <option value="4">4</option>
-        <option value="5">5</option>
+        <option value="5">Sangat Baik</option>
+        <option value="4">Baik</option>
+        <option value="3">Cukup</option>
+        <option value="2">Kurang</option>
+        <option value="1">Sangat Kurang</option>
       </select>
       <div id="error" class="error"></div>
       <button id="nextBtn">Berikutnya</button>
@@ -159,12 +159,23 @@ function renderQuestion(withSlide) {
   document.getElementById('nextBtn').onclick = nextHandler;
 }
 
+function labelSkor(skor) {
+  switch (parseInt(skor)) {
+    case 5: return 'Sangat Baik';
+    case 4: return 'Baik';
+    case 3: return 'Cukup';
+    case 2: return 'Kurang';
+    case 1: return 'Sangat Kurang';
+    default: return skor;
+  }
+}
+
 function renderAlasan(skor) {
   const kar = karakteristik[currentIndex];
   const sub = kar.sub[currentSub];
   app.innerHTML = `
     <div class="question-box">
-      <div style="font-size:1.05em;color:#2563eb;font-weight:600;">✏️ Alasan memberi nilai <b>${skor}</b> pada <b>${sub.nama}</b>:</div>
+      <div style="font-size:1.05em;color:#2563eb;font-weight:600;">✏️ Alasan memberi nilai <b>${labelSkor(skor)}</b> pada <b>${sub.nama}</b>:</div>
     </div>
     <div class="penilaian-box">
       <textarea id="alasanInput" rows="3" placeholder="Tulis alasan Anda di sini..." style="font-size:1.05em;width:100%;padding:10px;border-radius:8px;border:1.5px solid #b6b6b6;"></textarea>
@@ -219,34 +230,57 @@ function nextHandler() {
 
 function renderResult() {
   let totalSkor = 0;
+  let totalSkorMaksimal = 0;
   let resultHTML = `<div class="result">
     <div style="font-size:1.13em;font-weight:600;color:#2563eb;margin-bottom:8px;">Hasil Evaluasi: <span style="color:#2d3a4a">${namaAplikasi}</span></div>
     <b>📊 Rekap Penilaian:</b><br><ul>`;
+
   karakteristik.forEach(kar => {
     const subJawaban = jawaban.filter(j => j.karakteristik === kar.nama);
     const subSkor = subJawaban.map(j => j.skor);
-    const rata = subSkor.reduce((a, b) => a + b, 0) / subSkor.length;
-    const nilaiBobot = rata * kar.bobot;
+
+    const totalSkorSub = subSkor.reduce((a, b) => a + b, 0);
+    const skorMaksKar = 5 * kar.sub.length;
+    const persentaseKar = (totalSkorSub / skorMaksKar) * 100;
+    const nilaiBobot = persentaseKar * kar.bobot;
+
     totalSkor += nilaiBobot;
-    resultHTML += `<li>${kar.nama} (${(kar.bobot * 100).toFixed(0)}%): Rata-rata ${rata.toFixed(2)} x Bobot = ${nilaiBobot.toFixed(2)}<ul style='margin-top:4px;'>`;
+    totalSkorMaksimal += 100 * kar.bobot;
+
+    resultHTML += `<li><b>${kar.nama}</b> (${(kar.bobot * 100).toFixed(0)}%): ${persentaseKar.toFixed(2)}% × Bobot = ${nilaiBobot.toFixed(2)}<ul style='margin-top:4px;'>`;
+
     subJawaban.forEach(j => {
-      resultHTML += `<li style='margin-bottom:2px;'>${j.subkarakteristik}: <b>${j.skor}</b><br><span style='color:#64748b;font-size:0.97em;'>Alasan: ${j.alasan}</span></li>`;
+      const subPersen = (j.skor / 5) * 100;
+      resultHTML += `<li style='margin-bottom:2px;'>${j.subkarakteristik}: <b>${j.skor}</b> (${subPersen.toFixed(0)}%)<br><span style='color:#64748b;font-size:0.97em;'>Alasan: ${j.alasan}</span></li>`;
     });
+
     resultHTML += `</ul></li>`;
   });
+
   resultHTML += '</ul>';
-  resultHTML += `<br><b>🧮 Skor Akhir:</b> ${totalSkor.toFixed(2)} dari 5.00<br>`;
+
+  const persentase = (totalSkor / totalSkorMaksimal) * 100;
+
+  resultHTML += `<br><b>🧮 Skor Akhir:</b> ${totalSkor.toFixed(2)} dari ${totalSkorMaksimal.toFixed(2)}<br>`;
+  resultHTML += `<b>🎯 Persentase Kualitas:</b> ${persentase.toFixed(2)}%<br>`;
+
   let kategori = "";
-  if (totalSkor >= 4.0) kategori = "BAIK ✅";
-  else if (totalSkor >= 3.0) kategori = "CUKUP ⚠️";
-  else kategori = "BURUK ❌";
+  if (persentase >= 81) kategori = "SANGAT BAIK ✅";
+  else if (persentase >= 61) kategori = "BAIK 👍";
+  else if (persentase >= 41) kategori = "CUKUP ⚠️";
+  else if (persentase >= 21) kategori = "KURANG ❌";
+  else kategori = "SANGAT KURANG ❌❌";
+
   resultHTML += `<div class="kategori">🧠 Kategori: ${kategori}</div>`;
   resultHTML += `</div>`;
-  // Render result box and button separately
+
+  // Render result + tombol ulang
   app.innerHTML = resultHTML + `\n<div style='text-align:center;margin-top:18px;'><button id="ulangBtn" style="background:linear-gradient(90deg,#22c55e,#38bdf8);color:#fff;font-weight:600;padding:12px 24px;border:none;border-radius:8px;box-shadow:0 2px 8px #38bdf822;cursor:pointer;font-size:1em;">Ingin nilai aplikasi lain?</button></div>`;
+
   // Simpan hasil terakhir ke localStorage
   localStorage.setItem('hasil_terakhir_iso25010', JSON.stringify({ jawaban, namaAplikasi }));
   clearProgress();
+
   document.getElementById('ulangBtn').onclick = () => {
     localStorage.removeItem('hasil_terakhir_iso25010');
     jawaban = [];
