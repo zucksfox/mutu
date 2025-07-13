@@ -2,7 +2,6 @@
 const karakteristik = [
   {
     nama: "Functionality",
-    bobot: 0.20,
     sub: [
       { nama: "Suitability", pertanyaan: "Apakah aplikasi sesuai dengan kebutuhan pengguna?" },
       { nama: "Accuracy", pertanyaan: "Seberapa akurat aplikasi dalam menjalankan fungsinya?" },
@@ -12,7 +11,6 @@ const karakteristik = [
   },
   {
     nama: "Reliability",
-    bobot: 0.20,
     sub: [
       { nama: "Maturity", pertanyaan: "Seberapa stabil aplikasi dalam penggunaan sehari-hari?" },
       { nama: "Availability", pertanyaan: "Seberapa sering aplikasi dapat diakses tanpa gangguan?" },
@@ -21,7 +19,6 @@ const karakteristik = [
   },
   {
     nama: "Usability",
-    bobot: 0.20,
     sub: [
       { nama: "Learnability", pertanyaan: "Seberapa mudah pengguna mempelajari aplikasi?" },
       { nama: "Operability", pertanyaan: "Seberapa mudah aplikasi dioperasikan oleh pengguna?" },
@@ -31,7 +28,6 @@ const karakteristik = [
   },
   {
     nama: "Efficiency",
-    bobot: 0.10,
     sub: [
       { nama: "Time behavior", pertanyaan: "Seberapa cepat aplikasi merespon perintah pengguna?" },
       { nama: "Resource utilization", pertanyaan: "Seberapa efisien aplikasi menggunakan sumber daya (memori, CPU, dll)?" }
@@ -39,7 +35,6 @@ const karakteristik = [
   },
   {
     nama: "Maintainability",
-    bobot: 0.15,
     sub: [
       { nama: "Modularity", pertanyaan: "Apakah aplikasi memiliki bagian-bagian yang terpisah dengan jelas?" },
       { nama: "Reusability", pertanyaan: "Apakah bagian aplikasi dapat digunakan kembali untuk kebutuhan lain?" },
@@ -49,7 +44,6 @@ const karakteristik = [
   },
   {
     nama: "Portability",
-    bobot: 0.15,
     sub: [
       { nama: "Adaptability", pertanyaan: "Seberapa mudah aplikasi dijalankan di lingkungan/platform berbeda?" },
       { nama: "Installability", pertanyaan: "Seberapa mudah aplikasi diinstal pada perangkat baru?" },
@@ -128,7 +122,7 @@ function renderQuestion(withSlide) {
   const kar = karakteristik[currentIndex];
   const sub = kar.sub[currentSub];
   let pertanyaan = sub.pertanyaan;
-  pertanyaan = pertanyaan.replace(/aplikasi(?!\s*([A-Za-z0-9_\-\(\[]*${namaAplikasi}[A-Za-z0-9_\-\)\]]*))/gi, match => `${match} <span class='nama-aplikasi-green'>${namaAplikasi}</span>`);
+  pertanyaan = pertanyaan.replace(/aplikasi/gi, match => `${match} <span class='nama-aplikasi-green'>${namaAplikasi}</span>`);
   const html = `
     <div class="question-box">
       <div style="font-size:1.05em;color:#2563eb;font-weight:600;">${pertanyaan}</div>
@@ -170,30 +164,13 @@ function labelSkor(skor) {
   }
 }
 
-function renderAlasan(skor) {
-  const kar = karakteristik[currentIndex];
-  const sub = kar.sub[currentSub];
-  app.innerHTML = `
-    <div class="question-box">
-      <div style="font-size:1.05em;color:#2563eb;font-weight:600;">✏️ Alasan memberi nilai <b>${labelSkor(skor)}</b> pada <b>${sub.nama}</b>:</div>
-    </div>
-    <div class="penilaian-box">
-      <textarea id="alasanInput" rows="3" placeholder="Tulis alasan Anda di sini..." style="font-size:1.05em;width:100%;padding:10px;border-radius:8px;border:1.5px solid #b6b6b6;"></textarea>
-      <div id="error" class="error"></div>
-      <button id="alasanBtn">Lanjutkan</button>
-    </div>
-  `;
-  document.getElementById('alasanBtn').onclick = () => {
-    const alasan = document.getElementById('alasanInput').value.trim();
-    const errorDiv = document.getElementById('error');
-    if (alasan.length < 2) {
-      errorDiv.textContent = 'Alasan harus diisi minimal 2 karakter.';
-      return;
-    }
-    // Simpan skor dan alasan
+function nextHandler() {
+  const skor = parseInt(document.getElementById('skor').value);
+  const errorDiv = document.getElementById('error');
+  if (skor >= 1 && skor <= 5) {
     const kar = karakteristik[currentIndex];
     const sub = kar.sub[currentSub];
-    jawaban.push({ karakteristik: kar.nama, subkarakteristik: sub.nama, skor: lastSkor, alasan });
+    jawaban.push({ karakteristik: kar.nama, subkarakteristik: sub.nama, skor });
     currentSub++;
     if (currentSub >= kar.sub.length) {
       currentSub = 0;
@@ -201,7 +178,6 @@ function renderAlasan(skor) {
     }
     if (currentIndex < karakteristik.length) {
       saveProgress();
-      // SLIDE OUT, THEN RENDER NEXT WITH SLIDE IN
       const appDiv = document.getElementById('app');
       appDiv.classList.add('slide-out-left');
       appDiv.addEventListener('transitionend', function handler(e) {
@@ -214,70 +190,46 @@ function renderAlasan(skor) {
     } else {
       renderResult();
     }
-  };
-}
-
-function nextHandler() {
-  const skor = parseInt(document.getElementById('skor').value);
-  const errorDiv = document.getElementById('error');
-  if (skor >= 1 && skor <= 5) {
-    lastSkor = skor;
-    renderAlasan(skor);
   } else {
-    errorDiv.textContent = "❌ Masukkan angka antara 1 sampai 5!";
+    errorDiv.textContent = "❌ Pilih salah satu nilai!";
   }
 }
 
 function renderResult() {
   let totalSkor = 0;
-  let totalSkorMaksimal = 0;
+  const totalSkorMaks = 105;
   let resultHTML = `<div class="result">
     <div style="font-size:1.13em;font-weight:600;color:#2563eb;margin-bottom:8px;">Hasil Evaluasi: <span style="color:#2d3a4a">${namaAplikasi}</span></div>
     <b>📊 Rekap Penilaian:</b><br><ul>`;
 
   karakteristik.forEach(kar => {
     const subJawaban = jawaban.filter(j => j.karakteristik === kar.nama);
-    const subSkor = subJawaban.map(j => j.skor);
-
-    const totalSkorSub = subSkor.reduce((a, b) => a + b, 0);
-    const skorMaksKar = 5 * kar.sub.length;
-    const persentaseKar = (totalSkorSub / skorMaksKar) * 100;
-    const nilaiBobot = persentaseKar * kar.bobot;
-
-    totalSkor += nilaiBobot;
-    totalSkorMaksimal += 100 * kar.bobot;
-
-    resultHTML += `<li><b>${kar.nama}</b> (${(kar.bobot * 100).toFixed(0)}%): ${persentaseKar.toFixed(2)}% × Bobot = ${nilaiBobot.toFixed(2)}<ul style='margin-top:4px;'>`;
-
+    resultHTML += `<li><b>${kar.nama}</b><ul style='margin-top:4px;'>`;
     subJawaban.forEach(j => {
-      const subPersen = (j.skor / 5) * 100;
-      resultHTML += `<li style='margin-bottom:2px;'>${j.subkarakteristik}: <b>${j.skor}</b> (${subPersen.toFixed(0)}%)<br><span style='color:#64748b;font-size:0.97em;'>Alasan: ${j.alasan}</span></li>`;
+      totalSkor += j.skor;
+      resultHTML += `<li style='margin-bottom:2px;'>${j.subkarakteristik}: <b>${labelSkor(j.skor)}</b></li>`;
     });
-
     resultHTML += `</ul></li>`;
   });
 
-  resultHTML += '</ul>';
+  resultHTML += `</ul>`;
 
-  const persentase = (totalSkor / totalSkorMaksimal) * 100;
-
-  resultHTML += `<br><b>🧮 Skor Akhir:</b> ${totalSkor.toFixed(2)} dari ${totalSkorMaksimal.toFixed(2)}<br>`;
+  const persentase = (totalSkor / totalSkorMaks) * 100;
+  resultHTML += `<br><b>🧮 Skor Akhir:</b> ${totalSkor} dari ${totalSkorMaks}<br>`;
   resultHTML += `<b>🎯 Persentase Kualitas:</b> ${persentase.toFixed(2)}%<br>`;
 
   let kategori = "";
-  if (persentase >= 81) kategori = "SANGAT BAIK ✅";
-  else if (persentase >= 61) kategori = "BAIK 👍";
-  else if (persentase >= 41) kategori = "CUKUP ⚠️";
-  else if (persentase >= 21) kategori = "KURANG ❌";
-  else kategori = "SANGAT KURANG ❌❌";
+  if (totalSkor <= 41) kategori = "❌ Broken (Aplikasi Rusak/Tidak Layak)";
+  else if (totalSkor <= 62) kategori = "⚠️ Kurang Optimal (Banyak Kekurangan)";
+  else if (totalSkor <= 77) kategori = "⚠️ Biasa Saja (Layak digunakan, Tapi Kurang Memuaskan)";
+  else if (totalSkor <= 92) kategori = "👍 Bagus (Sebagian Besar Sudah Baik)";
+  else kategori = "✅ Super Bagus (Sangat Layak dan Direkomendasikan)";
 
   resultHTML += `<div class="kategori">🧠 Kategori: ${kategori}</div>`;
   resultHTML += `</div>`;
 
-  // Render result + tombol ulang
-  app.innerHTML = resultHTML + `\n<div style='text-align:center;margin-top:18px;'><button id="ulangBtn" style="background:linear-gradient(90deg,#22c55e,#38bdf8);color:#fff;font-weight:600;padding:12px 24px;border:none;border-radius:8px;box-shadow:0 2px 8px #38bdf822;cursor:pointer;font-size:1em;">Ingin nilai aplikasi lain?</button></div>`;
+  app.innerHTML = resultHTML + `\n<div style='text-align:center;margin-top:18px;'><button id="ulangBtn" style="background:linear-gradient(90deg,#22c55e,#38bdf8);color:#fff;font-weight:600;padding:12px 24px;border:none;border-radius:8px;box-shadow:0 2px 8px #38bdf822;cursor:pointer;font-size:1em;">Nilai aplikasi lain?</button></div>`;
 
-  // Simpan hasil terakhir ke localStorage
   localStorage.setItem('hasil_terakhir_iso25010', JSON.stringify({ jawaban, namaAplikasi }));
   clearProgress();
 
@@ -291,7 +243,6 @@ function renderResult() {
   };
 }
 
-// Saat load, jika ada hasil terakhir, tampilkan hasil
 (function init() {
   const hasilTerakhir = localStorage.getItem('hasil_terakhir_iso25010');
   if (hasilTerakhir) {
@@ -320,4 +271,4 @@ function renderResult() {
   currentSub = 0;
   namaAplikasi = '';
   renderInputNamaAplikasi();
-})(); 
+})();
