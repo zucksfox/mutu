@@ -417,3 +417,20 @@ li {
     border-radius: 6px;
   }
 } 
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: #fff !important;
+    -webkit-print-color-adjust: exact;
+  }
+  table {
+    page-break-inside: auto;
+  }
+  tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+}

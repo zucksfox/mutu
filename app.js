@@ -195,10 +195,12 @@ function nextHandler() {
   }
 }
 
+/** ... kode awal tetap ... */
+
 function renderResult() {
   let totalSkor = 0;
   const totalSkorMaks = 105;
-  let resultHTML = `<div class="result">
+  let resultHTML = `<div class="result" id="hasil-evaluasi">
     <div style="font-size:1.13em;font-weight:600;color:#2563eb;margin-bottom:8px;">Hasil Evaluasi: <span style="color:#2d3a4a">${namaAplikasi}</span></div>
     <b>📊 Rekap Penilaian:</b><br><ul>`;
 
@@ -215,7 +217,7 @@ function renderResult() {
   resultHTML += `</ul>`;
 
   const persentase = (totalSkor / totalSkorMaks) * 100;
-  resultHTML += `<br><b>🧮 Skor Akhir:</b> ${totalSkor} dari ${totalSkorMaks}<br>`;
+  resultHTML += `<br><b>🧶 Skor Akhir:</b> ${totalSkor} dari ${totalSkorMaks}<br>`;
   resultHTML += `<b>🎯 Persentase Kualitas:</b> ${persentase.toFixed(2)}%<br>`;
 
   let kategori = "";
@@ -228,7 +230,11 @@ function renderResult() {
   resultHTML += `<div class="kategori">🧠 Kategori: ${kategori}</div>`;
   resultHTML += `</div>`;
 
-  app.innerHTML = resultHTML + `\n<div style='text-align:center;margin-top:18px;'><button id="ulangBtn" style="background:linear-gradient(90deg,#22c55e,#38bdf8);color:#fff;font-weight:600;padding:12px 24px;border:none;border-radius:8px;box-shadow:0 2px 8px #38bdf822;cursor:pointer;font-size:1em;">Nilai aplikasi lain?</button></div>`;
+  app.innerHTML = resultHTML + `
+<div style='text-align:center;margin-top:18px;'>
+  <button id="cetakPDFBtn" class="no-print" style="background:linear-gradient(90deg,#f59e42,#f43f5e);color:#fff;font-weight:600;padding:12px 24px;border:none;border-radius:8px;box-shadow:0 2px 8px #f59e4288;cursor:pointer;font-size:1em;margin-right:10px;">Cetak PDF</button>
+  <button id="ulangBtn" class="no-print" style="background:linear-gradient(90deg,#22c55e,#38bdf8);color:#fff;font-weight:600;padding:12px 24px;border:none;border-radius:8px;box-shadow:0 2px 8px #38bdf822;cursor:pointer;font-size:1em;">Nilai aplikasi lain?</button>
+</div>`;
 
   localStorage.setItem('hasil_terakhir_iso25010', JSON.stringify({ jawaban, namaAplikasi }));
   clearProgress();
@@ -241,6 +247,97 @@ function renderResult() {
     namaAplikasi = '';
     renderInputNamaAplikasi();
   };
+
+  document.getElementById('cetakPDFBtn').onclick = () => {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const marginLeft = 15;
+    let y = 15;
+    const lineHeight = 8;
+  
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Laporan Evaluasi Aplikasi`, marginLeft, y);
+    y += lineHeight;
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Nama Aplikasi: ${namaAplikasi}`, marginLeft, y);
+    y += lineHeight + 2;
+  
+    // Header tabel
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.text("No", marginLeft, y);
+    doc.text("Karakteristik", marginLeft + 10, y);
+    doc.text("Subkarakteristik", marginLeft + 60, y);
+    doc.text("Skor", marginLeft + 160, y);
+    y += 5;
+    doc.setLineWidth(0.2);
+    doc.line(marginLeft, y, 195, y);
+    y += 4;
+  
+    let no = 1;
+    totalSkor = 0;
+  
+    karakteristik.forEach(kar => {
+      kar.sub.forEach(sub => {
+        const jawabanItem = jawaban.find(j => j.karakteristik === kar.nama && j.subkarakteristik === sub.nama);
+        const skor = jawabanItem ? jawabanItem.skor : '-';
+        totalSkor += jawabanItem ? jawabanItem.skor : 0;
+  
+        if (y > 270) {
+          doc.addPage();
+          y = 15;
+        }
+  
+        const subkarText = doc.splitTextToSize(sub.nama, 90); // wrap subkarakteristik
+        const rowHeight = subkarText.length * 6;
+  
+        doc.setFont('helvetica', 'normal');
+        doc.text(String(no++), marginLeft, y);
+        doc.text(doc.splitTextToSize(kar.nama, 40), marginLeft + 10, y);
+        doc.text(subkarText, marginLeft + 60, y);
+        doc.text(String(skor), marginLeft + 160, y);
+        y += rowHeight;
+      });
+    });
+  
+    const persentase = (totalSkor / totalSkorMaks) * 100;
+    if (y > 250) {
+      doc.addPage();
+      y = 15;
+    }
+  
+    y += 4;
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Total Skor: ${totalSkor} / ${totalSkorMaks}`, marginLeft, y);
+    y += lineHeight;
+    doc.text(`Persentase: ${persentase.toFixed(2)}%`, marginLeft, y);
+    y += lineHeight;
+  
+    let kategori = "";
+    if (totalSkor <= 41) kategori = "Broken (Tidak Layak)";
+    else if (totalSkor <= 62) kategori = "Kurang Optimal";
+    else if (totalSkor <= 77) kategori = "Biasa Saja";
+    else if (totalSkor <= 92) kategori = "Bagus";
+    else kategori = "Super Bagus";
+  
+    doc.text(`Kategori: ${kategori}`, marginLeft, y);
+    doc.save(`Hasil-Evaluasi-${namaAplikasi}.pdf`);
+  };
+}
+
+// Tambahkan CSS agar tombol tidak ikut tercetak
+if (!document.getElementById('print-style')) {
+  const style = document.createElement('style');
+  style.id = 'print-style';
+  style.innerHTML = `
+    @media print {
+      .no-print { display: none !important; }
+      body { background: #fff !important; }
+    }
+  `;
+  document.head.appendChild(style);
 }
 
 (function init() {
