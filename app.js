@@ -259,22 +259,23 @@ function renderResult() {
     doc.setFont('helvetica', 'bold');
     doc.text(`Laporan Evaluasi Aplikasi`, marginLeft, y);
     y += lineHeight;
-    doc.setFontSize(12);
     doc.setFont('helvetica', 'normal');
+    doc.setFontSize(12);
     doc.text(`Nama Aplikasi: ${namaAplikasi}`, marginLeft, y);
     y += lineHeight + 2;
   
     // Header tabel
-    doc.setFontSize(11);
+    doc.setFontSize(10);
     doc.setFont('helvetica', 'bold');
     doc.text("No", marginLeft, y);
     doc.text("Karakteristik", marginLeft + 10, y);
-    doc.text("Subkarakteristik", marginLeft + 60, y);
-    doc.text("Skor", marginLeft + 160, y);
+    doc.text("Subkarakteristik", marginLeft + 50, y);
+    doc.text("Pertanyaan", marginLeft + 100, y);
+    doc.text("Skor", marginLeft + 185, y);
     y += 5;
     doc.setLineWidth(0.2);
-    doc.line(marginLeft, y, 195, y);
-    y += 4;
+    doc.line(marginLeft, y, 200, y);
+    y += 3;
   
     let no = 1;
     totalSkor = 0;
@@ -285,23 +286,27 @@ function renderResult() {
         const skor = jawabanItem ? jawabanItem.skor : '-';
         totalSkor += jawabanItem ? jawabanItem.skor : 0;
   
-        if (y > 270) {
+        // Wrap teks untuk subkarakteristik dan pertanyaan
+        const subkarWrapped = doc.splitTextToSize(sub.nama, 45);
+        const pertanyaanWrapped = doc.splitTextToSize(sub.pertanyaan, 80);
+        const rowHeight = Math.max(subkarWrapped.length, pertanyaanWrapped.length) * 6;
+  
+        if (y + rowHeight > 270) {
           doc.addPage();
           y = 15;
         }
   
-        const subkarText = doc.splitTextToSize(sub.nama, 90); // wrap subkarakteristik
-        const rowHeight = subkarText.length * 6;
-  
         doc.setFont('helvetica', 'normal');
         doc.text(String(no++), marginLeft, y);
-        doc.text(doc.splitTextToSize(kar.nama, 40), marginLeft + 10, y);
-        doc.text(subkarText, marginLeft + 60, y);
-        doc.text(String(skor), marginLeft + 160, y);
+        doc.text(doc.splitTextToSize(kar.nama, 35), marginLeft + 10, y);
+        doc.text(subkarWrapped, marginLeft + 50, y);
+        doc.text(pertanyaanWrapped, marginLeft + 100, y);
+        doc.text(String(skor), marginLeft + 185, y);
         y += rowHeight;
       });
     });
   
+    // Total skor dan kategori
     const persentase = (totalSkor / totalSkorMaks) * 100;
     if (y > 250) {
       doc.addPage();
@@ -325,7 +330,7 @@ function renderResult() {
     doc.text(`Kategori: ${kategori}`, marginLeft, y);
     doc.save(`Hasil-Evaluasi-${namaAplikasi}.pdf`);
   };
-}
+}  
 
 // Tambahkan CSS agar tombol tidak ikut tercetak
 if (!document.getElementById('print-style')) {
